@@ -1,7 +1,4 @@
-﻿using System.Globalization;
-using System.Reflection;
-
-namespace MauiCoreLibrary.Converters;
+﻿namespace MauiCoreLibrary.Converters;
 
 public class EnumToDescriptionConverter : IValueConverter // TODO: exctract logic to desciption provider and inject in devicemodel
 {
