@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace MauiCoreLibrary.Services;
+﻿namespace MauiCoreLibrary.Services;
 
 public class FileLogService : IFileLogService
 {
