@@ -1,7 +1,4 @@
-﻿using System.Runtime.Serialization.Json;
-using System.Text;
-
-namespace MauiCoreLibrary.Services
+﻿namespace MauiCoreLibrary.Services
 {
     public class Serializer : ISerializer
     {
