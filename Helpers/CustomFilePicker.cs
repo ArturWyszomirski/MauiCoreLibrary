@@ -2,7 +2,7 @@
 
 public class CustomFilePicker
 {
-    public static async Task<FileResult> PickCsvFile()
+    public static async Task<FileResult> PickCsvFileAsync()
     {
         return await FilePicker.PickAsync(new PickOptions
         {
