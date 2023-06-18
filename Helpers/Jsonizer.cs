@@ -127,13 +127,13 @@ public class Jsonizer
     private static string ConvertToDictionaries(int[] columns, ref int[] rows, string[] csvLines)
     {
         List<Dictionary<string, object>> jsonData = new();
-        Dictionary<string, object> jsonObject = new();
 
         string[] headers = csvLines[0].Split(',');
         rows = rows.Skip(1).ToArray();
 
         foreach (int rowIndex in rows)
         {
+            Dictionary<string, object> jsonObject = new();
             string[] csvValues = csvLines[rowIndex].Split(',');
 
             foreach (int columnIndex in columns)
@@ -159,8 +159,8 @@ public class Jsonizer
 
         foreach (int rowIndex in rows)
         {
-            string[] csvValues = csvLines[rowIndex].Split(",");
             int jsonDataColumnIndex = 0;
+            string[] csvValues = csvLines[rowIndex].Split(",");
 
             foreach (int columnIndex in columns)
             {
