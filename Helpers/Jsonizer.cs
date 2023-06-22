@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace MauiCoreLibrary.Helpers;
+﻿namespace MauiCoreLibrary.Helpers;
 
 public class Jsonizer
 {
@@ -8,30 +6,17 @@ public class Jsonizer
     /// Converts .csv file to Json string.
     /// </summary>
     /// <param name="csvFilePath">Path to .csv file.</param>
-    /// <param name="kvpFormat">If true .csv file will be converted to a collection of JSON objects with kvp pair. 
-    ///                         If false .csv file will be converted to 2D array. 
-    ///                         Default set to true.</param>
-    /// <param name="getHeaders">Defines wether headers should be put in JSON string. Must be set true if <paramref name="kvpFormat"/> is set to true. Default set to true.</param>
     /// <param name="columnsScope">Column range. Provide in format: [first column of range, last column of range].</param>
     /// <param name="columns">Selected columns.</param>
     /// <param name="rowsScope">Rows range. Provide in format: [first row of range, last row of range].</param>
     /// <param name="rows">Selected rows.</param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public static string ConvertCsvToJson(string csvFilePath,
-                                            bool kvpFormat = true,
-                                            bool getHeaders = true,
-                                            int[] columnsScope = null,
-                                            int[] columns = null,
-                                            int[] rowsScope = null,
-                                            int[] rows = null)
+    public static string ConvertCsvToJson(string csvFilePath, int[] columnsScope = null, int[] columns = null, int[] rowsScope = null, int[] rows = null)
     {
         #region Exceptions
         if (string.IsNullOrEmpty(csvFilePath))
             throw new ArgumentException($"Parameter {nameof(csvFilePath)} cannot be null or empty.", nameof(csvFilePath));
-
-        if(!getHeaders && kvpFormat)
-            throw new ArgumentException($"{nameof(getHeaders)} can't be false if {nameof(kvpFormat)} is set to true." ,nameof(kvpFormat));
 
         if (columnsScope is not null && columnsScope.Length != 2)
             throw new ArgumentException($"Incorrect format of {nameof(columnsScope)}.", nameof(columnsScope));
@@ -57,10 +42,7 @@ public class Jsonizer
         columns = GetColumns(columnsScope, columns, csvLines);
         rows = GetRows(rowsScope, rows, csvLines);
 
-        if (kvpFormat)
-            return ConvertToDictionaries(columns, ref rows, csvLines);
-        else
-            return ConvertToArrays(getHeaders, ref rows, columns, csvLines);
+        return ConvertToDictionaries(columns, ref rows, csvLines);
     }
 
     private static int[] GetColumns(int[] columnsScope, int[] columns, string[] csvLines)
@@ -144,30 +126,6 @@ public class Jsonizer
             }
 
             jsonData.Add(jsonObject);
-        }
-
-        return JsonConvert.SerializeObject(jsonData, Formatting.Indented);
-    }
-
-    private static string ConvertToArrays(bool getHeaders, ref int[] rows, int[] columns, string[] csvLines)
-    {
-        if (!getHeaders && rows.Contains(0))
-            rows = rows.Skip(1).ToArray();
-
-        object[,] jsonData = new object[rows.Length, columns.Length];
-        int jsonDataRowIndex = 0;
-
-        foreach (int rowIndex in rows)
-        {
-            int jsonDataColumnIndex = 0;
-            string[] csvValues = csvLines[rowIndex].Split(",");
-
-            foreach (int columnIndex in columns)
-            {
-                jsonData[jsonDataRowIndex, jsonDataColumnIndex] = GetValue(csvValues[columnIndex]);
-                jsonDataColumnIndex++;
-            }
-            jsonDataRowIndex++;
         }
 
         return JsonConvert.SerializeObject(jsonData, Formatting.Indented);
