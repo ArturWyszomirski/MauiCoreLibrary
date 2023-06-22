@@ -128,7 +128,7 @@ public class Jsonizer
             jsonData.Add(jsonObject);
         }
 
-        return JsonConvert.SerializeObject(jsonData, Formatting.Indented);
+        return JsonSerializer.Serialize(jsonData);
     }
 
     private static object GetValue(string value)
