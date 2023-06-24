@@ -9,7 +9,7 @@ public class CustomFilePicker
             PickerTitle = "Select CSV File",
             FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
             {
-                { DevicePlatform.Android, new[] { "application/csv", "text/csv" } },
+                { DevicePlatform.Android, new[] { "text/comma-separated-values" } },
                 { DevicePlatform.iOS, new[] { "com.microsoft.csv" } },
                 { DevicePlatform.WinUI, new[] { ".csv" } }
             })
