@@ -2,7 +2,7 @@
 
 public interface IFileReportService : IFileLogService
 {
-    new string FileName { get; set; }
+    new string FileName { get; }
 
     void Append(params string[] texts);
 }

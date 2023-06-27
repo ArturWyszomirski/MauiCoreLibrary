@@ -2,14 +2,17 @@
 
 public class FileReportService : FileLogService, IFileReportService
 {
+    private readonly IAlertService _alert;
+
     readonly object _appendLock = new();
 
-    public FileReportService(IAppSettingsModel appSettings) : base(appSettings)
+    public FileReportService(IAlertService alert, IAppSettingsModel appSettings) : base(alert, appSettings)
     {
-        FilePath = Path.Combine(appSettings.ApplicationDataDirectory, "Reports");
+        _alert = alert;
     }
 
-    public new string FileName { get; set; }
+    protected override string DirectoryName => "Reports";
+    protected override string FileSuffix => "Report";
 
     public void Append(params string[] texts)
     {
@@ -17,13 +20,13 @@ public class FileReportService : FileLogService, IFileReportService
         {
             try
             {
-                using StreamWriter streamWriter = File.AppendText(Path.Join(base.FilePath, FileName));
+                using StreamWriter streamWriter = File.AppendText(Path.Join(FilePath, FileName));
                 foreach (string text in texts)
                     streamWriter.Write(text);
             }
-            catch
+            catch (Exception ex) 
             {
-                //dodać exceptiony
+                _alert.DisplayAlertAsync("Error", $"{ex.Message}", "Ok");
                 throw;
             }
         }
@@ -35,14 +38,17 @@ public class FileReportService : FileLogService, IFileReportService
         {
             try
             {
-                using StreamWriter streamWriter = File.AppendText(Path.Join(base.FilePath, FileName));
+                using StreamWriter streamWriter = File.AppendText(Path.Join(FilePath, FileName));
+
                 foreach (string line in lines)
                     streamWriter.WriteLine(line);
+
+                streamWriter.Close();
             }
-            catch
+            catch (Exception ex)
             {
-                //dodać exceptiony
-                throw;
+                _alert?.DisplayAlertAsync("Error", $"${ex.Message}", "Ok");
+                Debug.WriteLine(ex);
             }
         }
     }

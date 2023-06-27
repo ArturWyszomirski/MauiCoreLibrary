@@ -1,34 +1,56 @@
-﻿namespace MauiCoreLibrary.Services;
+﻿using Microsoft.VisualBasic.FileIO;
+
+namespace MauiCoreLibrary.Services;
 
 public class FileLogService : IFileLogService
 {
+    private readonly IAlertService _alert;
+    private readonly IAppSettingsModel _appSettings;
+
     readonly object _readLock = new();
     readonly object _appendLock = new();
 
-    public FileLogService(IAppSettingsModel appSettings)
+    public FileLogService(IAlertService alert, IAppSettingsModel appSettings)
     {
-        FilePath = Path.Combine(appSettings.ApplicationDataDirectory, "Logs");
-        FileName = $"{DateTime.Now.Year}_{DateTime.Now.Month}_{DateTime.Now.Day}_{DateTime.Now.Hour}_{DateTime.Now.Minute}_{DateTime.Now.Second}_Log.txt";
+        _alert = alert;
+        _appSettings = appSettings;
     }
 
     public string FilePath { get; protected set; }
-
     public string FileName { get; protected set; }
+    protected virtual string DirectoryName => "Logs";
+    protected virtual string FileSuffix => "Log";
+    protected string FileType { get; set; } = "txt";
 
-    public void CreateFile(string filePath, string fileName)
+    /// <summary>
+    /// If <paramref name="filePath"/> or <paramref name="fileName"/> not provided creates a file with default values default values (filePath: MyDocuments/AppName).
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <param name="fileName"></param>
+    /// <exception cref="Exception"></exception>
+    public void CreateFile(string filePath = null, string fileName = null)
     {
-        FilePath = filePath;
-        FileName = fileName;
+        if (string.IsNullOrEmpty(filePath))
+            if (!string.IsNullOrEmpty(_appSettings?.AppName))
+                FilePath = Path.Combine(SpecialDirectories.MyDocuments, _appSettings?.AppName, DirectoryName);
+            else throw new Exception($"{nameof(_appSettings.AppName)} is null or empty.");
+        else
+            FilePath = filePath;
+
+        if (string.IsNullOrEmpty(fileName))
+            FileName = $"{TimeStamp.TimeStampDashed}_{FileSuffix}.{FileType}";
+        else
+            FileName = fileName;
 
         try
         {
-            Directory.CreateDirectory(filePath);
-            using StreamWriter streamWriter = File.CreateText(Path.Join(filePath, fileName));
+            Directory.CreateDirectory(FilePath);
+            using StreamWriter streamWriter = File.CreateText(Path.Join(FilePath, FileName));
         }
-        catch
+        catch (Exception ex)
         {
-            //dodać exceptiony
-            throw;
+            _alert?.DisplayAlertAsync("Error", $"${ex.Message}", "Ok");
+            Debug.WriteLine(ex);
         }
     }
 
@@ -46,10 +68,10 @@ public class FileLogService : IFileLogService
 
                 streamWriter.Close();
             }
-            catch
+            catch (Exception ex)
             {
-                // TODO: add exceptions
-                throw;
+                _alert?.DisplayAlertAsync("Error", $"${ex.Message}", "Ok");
+                Debug.WriteLine(ex);
             }
 #if DEBUG
             Debug.WriteLine($"[{DateTime.Now:O}]");
@@ -67,9 +89,9 @@ public class FileLogService : IFileLogService
                 using StreamReader streamReader = File.OpenText(Path.Join(FilePath, FileName));
                 return streamReader.ReadToEnd();
             }
-            catch
+            catch (Exception ex)
             {
-                //dodać exceptiony
+                _alert?.DisplayAlertAsync("Error", $"${ex.Message}", "Ok");
                 throw;
             }
         }

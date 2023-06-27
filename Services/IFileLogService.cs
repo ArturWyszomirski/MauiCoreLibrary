@@ -6,6 +6,6 @@ public interface IFileLogService
     string FileName { get; }
 
     void AppendLine(params string[] lines);
-    void CreateFile(string filePath, string fileName);
+    void CreateFile(string filePath = null, string fileName = null);
     string ReadFile();
 }
