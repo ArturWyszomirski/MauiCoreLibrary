@@ -1,4 +1,5 @@
 ﻿global using MauiCoreLibrary.Behaviors;
+global using MauiCoreLibrary.Helpers;
 global using MauiCoreLibrary.Models;
 global using MauiCoreLibrary.ViewModels;
 
