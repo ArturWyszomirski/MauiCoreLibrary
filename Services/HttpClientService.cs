@@ -1,19 +1,44 @@
 ﻿namespace MauiCoreLibrary.Services;
 
-public class HttpClientService
+public class HttpClientService : IHttpClientService
 {
-    public static async Task<List<Dictionary<string, object>>> PostJsonAsync(string uri, string json)
-    {
-        using HttpClient client = new();
-        StringContent content = new(json, Encoding.UTF8, "application/json");
-        using HttpResponseMessage response = await client.PostAsync(uri, content);
+    private readonly IAlertService _alert;
+    private readonly IFileLogService _log;
 
-        if (response.IsSuccessStatusCode)
+    public HttpClientService(IAlertService alert, IFileLogService log)
+    {
+        _alert = alert;
+        _log = log;
+    }
+
+    public async Task<List<Dictionary<string, object>>> PostJsonAsync(string uri, string json)
+    {
+        List<Dictionary<string, object>> postResponse = new();
+
+        try
         {
-            string jsonResponse = await response.Content.ReadAsStringAsync(); 
-            return JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonResponse);
+            using HttpClient client = new();
+            StringContent content = new(json, Encoding.UTF8, "application/json");
+            _log?.AppendLine($"New send POST request to {uri} request with content:\n{json}");
+            using HttpResponseMessage httpResponse = await client.PostAsync(uri, content);
+            _log?.AppendLine($"POST requested response: {httpResponse.StatusCode}");
+
+            if (httpResponse.IsSuccessStatusCode)
+            {
+                string jsonResponse = await httpResponse.Content.ReadAsStringAsync();
+                _log?.AppendLine($"POST response content:\n{jsonResponse}");
+                postResponse = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonResponse);
+            }
+            else
+                throw new Exception($"Request unsuccessful!\n\nRequest message:\n{httpResponse.RequestMessage}\n\nStatus code:\n{httpResponse.StatusCode}\n\nReason:\n{httpResponse.ReasonPhrase}");
+
         }
-        else
-            throw new Exception($"Request unsuccessful!\n\nRequest message:\n{response.RequestMessage}\n\nStatus code:\n{response.StatusCode}\n\nReason:\n{response.ReasonPhrase}");
+        catch (Exception ex)
+        {
+            _log?.AppendLine(ex.ToString());
+            _alert?.DisplayAlertAsync("Error", $"Request not successful.\nError message: {ex.Message}", "Ok");
+        }
+
+        return postResponse;
     }
 }
