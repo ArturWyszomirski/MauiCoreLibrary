@@ -3,5 +3,5 @@
 public interface IAppSettingsModel
 {
     string ApplicationDataDirectory { get; }
-    string ProductName { get; }
+    string AppName { get; }
 }

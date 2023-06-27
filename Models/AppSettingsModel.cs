@@ -2,7 +2,7 @@
 
 public class AppSettingsModel : IAppSettingsModel
 {
-    public string ProductName { get; protected set; }
+    public string AppName { get; protected set; } = Assembly.GetCallingAssembly().GetName().Name;
 
     public string ApplicationDataDirectory { get; protected set; }
 }
