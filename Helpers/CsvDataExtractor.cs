@@ -1,7 +1,34 @@
 ﻿namespace MauiCoreLibrary.Helpers;
 
-public class Jsonizer
+public class CsvDataExtractor
 {
+    public static (List<T[]>, int, int) ExtractData<T>(string csvFilePath, int[] columnsScope = null, int[] columns = null, int[] rowsScope = null, int[] rows = null)
+    {
+        CheckScopes(csvFilePath, columnsScope, rowsScope);
+        string[] csvLines = GetCsvLines(csvFilePath);
+        columns = GetColumns(columnsScope, columns, csvLines);
+        rows = GetRows(rowsScope, rows, csvLines);
+
+        List<T[]> data = new();
+        foreach (int rowIndex in rows)
+        {
+            List<T> values = new();
+            string[] csvValues = csvLines[rowIndex].Split(',');
+
+            foreach (int columnIndex in columns)
+            {
+                object value = GetValue(csvValues[columnIndex]);
+                Type type = value.GetType();
+                if (typeof(T) == value.GetType())
+                    values.Add((T)value);
+            }
+
+            data.Add(values.ToArray());
+        }
+
+        return (data, columns.Length, rows.Length);
+    }
+
     /// <summary>
     /// Converts .csv file to Json string.
     /// </summary>
@@ -13,6 +40,16 @@ public class Jsonizer
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     public static string ConvertCsvToJson(string csvFilePath, int[] columnsScope = null, int[] columns = null, int[] rowsScope = null, int[] rows = null)
+    {
+        CheckScopes(csvFilePath, columnsScope, rowsScope);
+        string[] csvLines = GetCsvLines(csvFilePath);
+        columns = GetColumns(columnsScope, columns, csvLines);
+        rows = GetRows(rowsScope, rows, csvLines);
+
+        return ConvertToDictionaries(columns, ref rows, csvLines);
+    }
+
+    private static void CheckScopes(string csvFilePath, int[] columnsScope, int[] rowsScope)
     {
         #region Exceptions
         if (string.IsNullOrEmpty(csvFilePath))
@@ -30,7 +67,10 @@ public class Jsonizer
         if (rowsScope is not null && rowsScope[0] > rowsScope[1])
             throw new ArgumentException($"Parameter {nameof(rowsScope)}[0] can't be greater than {nameof(rowsScope)}[1].", nameof(rowsScope));
         #endregion
+    }
 
+    private static string[] GetCsvLines(string csvFilePath)
+    {
         string[] csvLines = File.ReadAllLines(csvFilePath);
 
         if (csvLines.Length == 0)
@@ -39,10 +79,7 @@ public class Jsonizer
         if (csvLines[0].StartsWith("sep"))
             csvLines = csvLines.Skip(1).ToArray();
 
-        columns = GetColumns(columnsScope, columns, csvLines);
-        rows = GetRows(rowsScope, rows, csvLines);
-
-        return ConvertToDictionaries(columns, ref rows, csvLines);
+        return csvLines;
     }
 
     private static int[] GetColumns(int[] columnsScope, int[] columns, string[] csvLines)
@@ -133,10 +170,10 @@ public class Jsonizer
 
     private static object GetValue(string value)
     {
-        if (int.TryParse(value, out int intValue))
+        if (float.TryParse(value, out float floatValue))
+            return floatValue;
+        else if (int.TryParse(value, out int intValue))
             return intValue;
-        else if (double.TryParse(value, out double doubleValue))
-            return doubleValue;
         else if (bool.TryParse(value, out bool boolValue))
             return boolValue;
         else
