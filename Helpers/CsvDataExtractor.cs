@@ -21,6 +21,8 @@ public class CsvDataExtractor
                 Type type = value.GetType();
                 if (typeof(T) == value.GetType())
                     values.Add((T)value);
+                else
+                    throw new Exception($"Value {value} cannot be converted to type {typeof(T)}.");
             }
 
             data.Add(values.ToArray());
