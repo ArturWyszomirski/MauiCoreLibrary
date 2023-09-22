@@ -47,8 +47,6 @@ public class CsvDataExtractor
     /// <param name="columns">Selected columns.</param>
     /// <param name="rowsScope">Rows range. Provide in format: [first row of range, last row of range].</param>
     /// <param name="rows">Selected rows.</param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
     public static string ConvertCsvToJson(string csvFilePath, int[] columnsScope = null, int[] columns = null, int[] rowsScope = null, int[] rows = null)
     {
         CheckScopes(csvFilePath, columnsScope, rowsScope);
