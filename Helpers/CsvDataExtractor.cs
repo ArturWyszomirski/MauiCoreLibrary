@@ -2,6 +2,14 @@
 
 public class CsvDataExtractor
 {
+    /// <summary>
+    /// Converts .csv file to a generic list.
+    /// </summary>
+    /// <param name="csvFilePath">Path to .csv file.</param>
+    /// <param name="columnsScope">Column range. Provide in format: [first column of range, last column of range].</param>
+    /// <param name="columns">Selected columns.</param>
+    /// <param name="rowsScope">Rows range. Provide in format: [first row of range, last row of range].</param>
+    /// <param name="rows">Selected rows.</param>
     public static (List<T[]>, int, int) ExtractData<T>(string csvFilePath, int[] columnsScope = null, int[] columns = null, int[] rowsScope = null, int[] rows = null)
     {
         CheckScopes(csvFilePath, columnsScope, rowsScope);
