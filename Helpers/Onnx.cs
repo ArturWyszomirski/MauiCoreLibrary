@@ -8,7 +8,6 @@ public class Onnx
     /// <summary>
     /// ONNX file should be put in the ../Resources/Raw directory.
     /// </summary>
-    /// <returns></returns>
     public static async Task<InferenceSession> LoadOnnxAsync(string fileName)
     {
         using Stream stream = await FileSystem.OpenAppPackageFileAsync(fileName);
