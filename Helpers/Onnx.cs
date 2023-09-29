@@ -25,4 +25,22 @@ public class Onnx
 
         return session;
     }
+
+    public static List<NamedOnnxValue> CreateInputs(List<float[]> data, int numberOfColumns, int numberOfRows)
+    {
+        ReadOnlySpan<int> dimensions = new int[] { numberOfRows }.Concat(new int[] { numberOfColumns }).ToArray();
+        DenseTensor<float> inputTensor = new(dimensions);
+
+        int dataRowNumber = 0;
+        foreach (float[] dataRow in data)
+        {
+            for (int i = 0; i < dataRow.Length; i++)
+                inputTensor.SetValue(i + (dataRow.Length * dataRowNumber), dataRow[i]);
+            dataRowNumber++;
+        }
+
+        List<NamedOnnxValue> inputs = new() { NamedOnnxValue.CreateFromTensor("X", inputTensor) };
+
+        return inputs;
+    }
 }
