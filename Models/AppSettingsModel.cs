@@ -1,8 +1,18 @@
-﻿namespace MauiCoreLibrary.Models;
+﻿using Microsoft.VisualBasic.FileIO;
+
+namespace MauiCoreLibrary.Models;
 
 public class AppSettingsModel : IAppSettingsModel
 {
-    public string AppName { get; protected set; } = Assembly.GetCallingAssembly().GetName().Name;
+    public AppSettingsModel()
+    {
+#if WINDOWS
+        AppDataDirectory = SpecialDirectories.MyDocuments;
+#elif ANDROID
+        AppDataDirectory = (string)Android.App.Application.Context.GetExternalFilesDir((string)Android.OS.Environment.DirectoryDocuments);
+#endif
+    }
+    public string AppName { get; } = Assembly.GetCallingAssembly().GetName().Name;
 
-    public string ApplicationDataDirectory { get; protected set; }
+    public string AppDataDirectory { get; }
 }

@@ -1,7 +1,8 @@
-﻿using Microsoft.VisualBasic.FileIO;
+﻿namespace MauiCoreLibrary.Services;
 
-namespace MauiCoreLibrary.Services;
-
+/// <summary>
+/// To use this service invoke CreateFile() before appending text.
+/// </summary>
 public class FileLogService : IFileLogService
 {
     private readonly IAlertService _alert;
@@ -32,8 +33,16 @@ public class FileLogService : IFileLogService
     {
         if (string.IsNullOrEmpty(filePath))
             if (!string.IsNullOrEmpty(_appSettings?.AppName))
-                FilePath = Path.Combine(SpecialDirectories.MyDocuments, _appSettings?.AppName, DirectoryName);
-            else throw new Exception($"{nameof(_appSettings.AppName)} is null or empty.");
+                if (!string.IsNullOrEmpty(_appSettings?.AppDataDirectory))
+                {
+#if WINDOWS
+                    FilePath = Path.Combine(_appSettings?.AppDataDirectory, _appSettings?.AppName, DirectoryName);
+#elif ANDROID
+                    FilePath = Path.Combine(_appSettings?.AppDataDirectory, DirectoryName);
+#endif
+                }
+                else throw new ArgumentNullException(_appSettings.AppDataDirectory);
+            else throw new ArgumentNullException(_appSettings.AppName);
         else
             FilePath = filePath;
 

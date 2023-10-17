@@ -2,6 +2,6 @@
 
 public interface IAppSettingsModel
 {
-    string ApplicationDataDirectory { get; }
+    string AppDataDirectory { get; }
     string AppName { get; }
 }
