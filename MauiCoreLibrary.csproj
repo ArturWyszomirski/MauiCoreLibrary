@@ -23,17 +23,29 @@
 	  <None Remove=".gitignore" />
 	  <None Remove="LICENSE.txt" />
 	  <None Remove="README.md" />
+	  <None Remove="Resources\Raw\RFB-320.bin" />
+	  <None Remove="Resources\Raw\RFB-320.param" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
 	  <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.16.0" />
+	  <PackageReference Include="UltraFaceDotNet.Xamarin" Version="1.0.0.2" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <Compile Update="Platforms\Android\Services\PowerManagementService.Android.cs">
 	    <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
 	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiAsset Include="Resources\Raw\RFB-320.bin">
+	    <LogicalName>%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+	  </MauiAsset>
+	  <MauiAsset Include="Resources\Raw\RFB-320.param">
+	    <LogicalName>%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+	  </MauiAsset>
 	</ItemGroup>
 
 </Project>
