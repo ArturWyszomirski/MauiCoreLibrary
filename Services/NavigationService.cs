@@ -6,17 +6,17 @@
 public class NavigationService : INavigationService
 {
     #region Fields
-    private readonly IServiceProvider serviceProvider;
-    private readonly IFileLogService log;
-    private object[] parameters;
-    private ShellNavigationState previousState;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly IFileLogService _log;
+    private object[] _parameters;
+    private ShellNavigationState _previousState;
     #endregion
 
     #region Constructors
     public NavigationService(IServiceProvider serviceProvider, IFileLogService log)
     {
-        this.serviceProvider = serviceProvider;
-        this.log = log;
+        _serviceProvider = serviceProvider;
+        _log = log;
 
         Shell.Current.Navigated += async (s, e) => await CallOnNavigatedToAsync();
         Shell.Current.Navigating += async (s, e) => await CallOnNavigatingFromAsync(); // navigating isn't fired when navigating using tabbar - MAUI framework bug
@@ -34,65 +34,65 @@ public class NavigationService : INavigationService
         #region URI-based navigation
     public async Task GoToAsync(string route, params object[] parameters)
     {
-        this.parameters = parameters;
+        _parameters = parameters;
         await Shell.Current.GoToAsync(route);
     }
 
     public async Task GoToAsync(string route, bool animate = true, params object[] parameters)
     {
-        this.parameters = parameters;
+        _parameters = parameters;
         await Shell.Current.GoToAsync(route, animate);
     }
 
     public async Task GoBackAsync(params object[] parameters)
     {
-        this.parameters = parameters;
-        await Shell.Current.GoToAsync(previousState);
+        _parameters = parameters;
+        await Shell.Current.GoToAsync(_previousState);
     }
 
     public async Task GoBackAsync(bool animate, params object[] parameters)
     {
-        this.parameters = parameters;
-        await Shell.Current.GoToAsync(previousState, animate);
+        _parameters = parameters;
+        await Shell.Current.GoToAsync(_previousState, animate);
     }
         #endregion
 
         #region Modeless navigation
     public async Task PushAsync(Page page, params object[] parameters)
     {
-        this.parameters = parameters;
+        _parameters = parameters;
         await Navigation.PushAsync(page);
     }
 
     public async Task PushAsync(Page page, bool animate = true, params object[] parameters)
     {
-        this.parameters = parameters;
+        _parameters = parameters;
         await Navigation.PushAsync(page, animate);
     }
 
     public async Task PushAsync<T>(params object[] parameters) where T : Page
     {
-        this.parameters = parameters;
-        Page page = serviceProvider.GetService<T>();
+        _parameters = parameters;
+        Page page = _serviceProvider.GetService<T>();
         await Navigation.PushAsync(page);
     }
 
     public async Task PushAsync<T>(bool animate = true, params object[] parameters) where T : Page
     {
-        this.parameters = parameters;
-        Page page = serviceProvider.GetService<T>();
+        _parameters = parameters;
+        Page page = _serviceProvider.GetService<T>();
         await Navigation.PushAsync(page, animate);
     }
 
     public async Task PopAsync(params object[] parameters)
     {
-        this.parameters = parameters;
+        _parameters = parameters;
         await Navigation.PopAsync();
     }
 
     public async Task PopAsync(bool animated = true, params object[] parameters)
     {
-        this.parameters = parameters;
+        _parameters = parameters;
         await Navigation.PopAsync(animated);
     }
         #endregion
@@ -101,17 +101,17 @@ public class NavigationService : INavigationService
     #region Private methods
     private async Task CallOnNavigatedToAsync()
     {
-        log?.AppendLine($"Navigating to: {CurrentPage.Title}");
+        _log?.AppendLine($"Navigating to: {CurrentPage.Title}");
         if (CurrentPage.BindingContext is ViewModelBase viewModel)
-            await viewModel.OnNavigatedToAsync(parameters);
+            await viewModel.OnNavigatedToAsync(_parameters);
     }
 
     private async Task CallOnNavigatingFromAsync()
     {
-        log?.AppendLine($"Navigating away from: {CurrentPage.Title}");
-        previousState = CurrentState;
+        _log?.AppendLine($"Navigating away from: {CurrentPage.Title}");
+        _previousState = CurrentState;
         if (CurrentPage.BindingContext is ViewModelBase viewModel)
-            await viewModel.OnNavigatingFromAsync(parameters);
+            await viewModel.OnNavigatingFromAsync(_parameters);
     }
     #endregion
 }
