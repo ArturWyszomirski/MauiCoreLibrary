@@ -11,9 +11,9 @@ public class HttpClientService : IHttpClientService
         _log = log;
     }
 
-    public async Task<List<Dictionary<string, object>>> PostJsonAsync(string uri, string json)
+    public async Task<Dictionary<string, object>> PostJsonAsync(string uri, string json)
     {
-        List<Dictionary<string, object>> postResponse = new();
+        Dictionary<string, object> postResponse = new();
 
         try
         {
@@ -27,7 +27,7 @@ public class HttpClientService : IHttpClientService
             {
                 string jsonResponse = await httpResponse.Content.ReadAsStringAsync();
                 _log?.AppendLine($"POST response content:\n{jsonResponse}");
-                postResponse = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(jsonResponse);
+                postResponse = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonResponse);
             }
             else
                 throw new Exception($"Request unsuccessful!\n\nRequest message:\n{httpResponse.RequestMessage}\n\nStatus code:\n{httpResponse.StatusCode}\n\nReason:\n{httpResponse.ReasonPhrase}");
@@ -36,7 +36,7 @@ public class HttpClientService : IHttpClientService
         catch (Exception ex)
         {
             _log?.AppendLine(ex.ToString());
-            _alert?.DisplayAlertAsync("Error", $"Request not successful.\nError message: {ex.Message}", "Ok");
+            await _alert?.DisplayAlertAsync("Error", $"Request not successful.\nError message: {ex.Message}", "Ok");
         }
 
         return postResponse;

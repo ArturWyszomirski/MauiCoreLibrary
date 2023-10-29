@@ -2,5 +2,5 @@
 
 public interface IHttpClientService
 {
-    Task<List<Dictionary<string, object>>> PostJsonAsync(string uri, string json);
+    Task<Dictionary<string, object>> PostJsonAsync(string uri, string json);
 }
