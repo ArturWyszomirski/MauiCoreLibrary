@@ -1,15 +1,17 @@
 ﻿namespace MauiCoreLibrary.Services
 {
-    public class Serializer : ISerializer
+    public class SerializeService : ISerializeService
     {
+        private readonly IAlertService _alert;
         private readonly IFileLogService _fileLog;
 
-        public Serializer(IFileLogService fileLog)
+        public SerializeService(IAlertService alert, IFileLogService fileLog)
         {
+            _alert = alert;
             _fileLog = fileLog;
         }
 
-        public T DeserializeObjectFromJsonFile<T>(string directory, string fileName)
+        public async Task<T> DeserializeObjectFromJsonFileAsync<T>(string directory, string fileName)
         {
             string filePath = Path.Combine(directory, fileName);
             try
@@ -20,12 +22,13 @@
             }
             catch (Exception ex)
             {
-                _fileLog.AppendLine($"JSON deserialization error: {ex.Message}");
+                _fileLog.AppendLine(ex.ToString());
+                await _alert?.DisplayAlertAsync("Error", $"JSON serialization error: {ex.Message}", "Ok");
                 return default;
             }
         }
 
-        public bool SerializeObjectToJsonFile<T>(T obj, string directory, string fileName)
+        public async Task<bool> SerializeObjectToJsonFileAsync<T>(T obj, string directory, string fileName)
         {
             string filePath = Path.Combine(directory, fileName);
             try
@@ -39,7 +42,8 @@
             }
             catch (Exception ex)
             {
-                _fileLog.AppendLine($"JSON serialization error: {ex.Message}");
+                _fileLog.AppendLine(ex.ToString());
+                await _alert?.DisplayAlertAsync("Error", $"JSON serialization error: {ex.Message}", "Ok");
                 return false;
             }
         }

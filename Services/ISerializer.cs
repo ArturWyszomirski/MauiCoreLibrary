@@ -1,8 +1,8 @@
 ﻿namespace MauiCoreLibrary.Services
 {
-    public interface ISerializer
+    public interface ISerializeService
     {
-        T DeserializeObjectFromJsonFile<T>(string directory, string fileName);
-        bool SerializeObjectToJsonFile<T>(T obj, string directory, string fileName);
+        Task<T> DeserializeObjectFromJsonFileAsync<T>(string directory, string fileName);
+        Task<bool> SerializeObjectToJsonFileAsync<T>(T obj, string directory, string fileName);
     }
 }
