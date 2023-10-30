@@ -72,18 +72,22 @@ public class HttpClientService : IHttpClientService
         {
             string jsonResponse = await httpResponse.Content.ReadAsStringAsync();
             _log?.AppendLine($"POST response content:\n{jsonResponse}");
+
             try
             {
                 postResponse = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonResponse);
             }
             catch (Exception ex)
             {
-                _log?.AppendLine(ex.ToString(), "httpResponse: ", jsonResponse);
+                _log?.AppendLine(ex.ToString());
                 await _alert?.DisplayAlertAsync("Error", $"Error during decoding response.\nError message: {ex.Message}", "Ok");
             }
         }
         else
-            throw new Exception($"Request unsuccessful!\n\nRequest message:\n{httpResponse.RequestMessage}\n\nStatus code:\n{httpResponse.StatusCode}\n\nReason:\n{httpResponse.ReasonPhrase}");
+            _log?.AppendLine($"Request unsuccessful!",
+                             $"Request message:\n{httpResponse.RequestMessage}",
+                             $"Status code:\n{httpResponse.StatusCode}",
+                             $"Reason:\n{httpResponse.ReasonPhrase}");
         
         return postResponse;
     }
