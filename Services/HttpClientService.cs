@@ -1,6 +1,4 @@
-﻿using System.Net.Mime;
-
-namespace MauiCoreLibrary.Services;
+﻿namespace MauiCoreLibrary.Services;
 
 public class HttpClientService : IHttpClientService
 {
@@ -44,7 +42,7 @@ public class HttpClientService : IHttpClientService
         try
         {
             using HttpClient client = new();
-            MultipartFormDataContent multipartFormData = CreateMultiPartFormDataContent(filePath, name, fileName);
+            MultipartFormDataContent multipartFormData = CreateMultiPartFormDataContent(filePath, mediaTypeHeader, name, fileName);
 
             if (!string.IsNullOrEmpty(apiKey))
                 client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
@@ -92,11 +90,11 @@ public class HttpClientService : IHttpClientService
         return postResponse;
     }
 
-    private static MultipartFormDataContent CreateMultiPartFormDataContent(string filePath, string name, string fileName)
+    private static MultipartFormDataContent CreateMultiPartFormDataContent(string filePath, string mediaTypeHeader, string name, string fileName)
     {
         byte[] bytes = Encoding.UTF8.GetBytes(filePath);
         ByteArrayContent content = new(bytes);
-        content.Headers.ContentType = new("image/jpeg");
+        content.Headers.ContentType = new(mediaTypeHeader);
         MultipartFormDataContent multipartFormData = new();
 
         if (fileName is not null && name is not null)
@@ -105,6 +103,7 @@ public class HttpClientService : IHttpClientService
             multipartFormData.Add(content, name);
         else
             multipartFormData.Add(content);
+
         return multipartFormData;
     }
     #endregion
