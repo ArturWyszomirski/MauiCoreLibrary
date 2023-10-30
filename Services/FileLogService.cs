@@ -75,6 +75,7 @@ public class FileLogService : IFileLogService
                 foreach (string line in lines)
                     streamWriter.WriteLine(line);
 
+                streamWriter.WriteLine();
                 streamWriter.Close();
             }
             catch (Exception ex)
