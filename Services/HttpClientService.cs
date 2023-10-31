@@ -37,6 +37,16 @@ public class HttpClientService : IHttpClientService
         }
     }
 
+    /// <summary>
+    /// not tested
+    /// </summary>
+    /// <param name="uri"></param>
+    /// <param name="filePath"></param>
+    /// <param name="mediaTypeHeader"></param>
+    /// <param name="name"></param>
+    /// <param name="fileName"></param>
+    /// <param name="apiKey"></param>
+    /// <returns></returns>
     public async Task<Dictionary<string, object>> PostFileAsync(string uri, string filePath, string mediaTypeHeader, string name = null, string fileName = null, string apiKey = null)
     {
         try
@@ -58,6 +68,40 @@ public class HttpClientService : IHttpClientService
             _log?.AppendLine(ex.ToString());
             await _alert?.DisplayAlertAsync("Error", $"Request not successful.\nError message: {ex.Message}", "Ok");
             return null;
+        }
+    }
+
+    /// <summary>
+    /// not tested
+    /// </summary>
+    /// <param name="uri"></param>
+    /// <param name="filePath"></param>
+    /// <param name="mediaTypeHeader"></param>
+    /// <param name="name"></param>
+    /// <param name="fileName"></param>
+    /// <param name="apiKey"></param>
+    /// <returns></returns>
+    public async Task<bool> PutFileAsync(string uri, string filePath, string mediaTypeHeader, string name = null, string fileName = null, string apiKey = null)
+    {
+        try
+        {
+            using HttpClient client = new();
+            MultipartFormDataContent multipartFormData = CreateMultiPartFormDataContent(filePath, mediaTypeHeader, name, fileName);
+
+            if (!string.IsNullOrEmpty(apiKey))
+                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+
+            _log?.AppendLine($"New PUT request send to {uri} request with content: {filePath}");
+            using HttpResponseMessage httpResponse = await client.PutAsync(uri, multipartFormData);
+
+            _log?.AppendLine($"PUT requested response: {httpResponse.StatusCode}");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _log?.AppendLine(ex.ToString());
+            await _alert?.DisplayAlertAsync("Error", $"Request not successful.\nError message: {ex.Message}", "Ok");
+            return false;
         }
     }
     #endregion
@@ -83,10 +127,10 @@ public class HttpClientService : IHttpClientService
         }
         else
             _log?.AppendLine($"Request unsuccessful!",
-                             $"Request message:\n{httpResponse.RequestMessage}",
-                             $"Status code:\n{httpResponse.StatusCode}",
-                             $"Reason:\n{httpResponse.ReasonPhrase}");
-        
+                             $"Request message:", $"{httpResponse.RequestMessage}",
+                             $"Status code:", $"{httpResponse.StatusCode}",
+                             $"Reason:", $"{httpResponse.ReasonPhrase}");
+
         return postResponse;
     }
 
