@@ -2,7 +2,7 @@
 
 namespace MauiCoreLibrary.Models;
 
-public class AppSettingsModel : IAppSettingsModel
+public class AppSettingsModel : ModelBase, IAppSettingsModel
 {
     public AppSettingsModel()
     {
