@@ -136,7 +136,7 @@ public class HttpClientService : IHttpClientService
 
     private static MultipartFormDataContent CreateMultiPartFormDataContent(string filePath, string mediaTypeHeader, string name, string fileName)
     {
-        byte[] bytes = Encoding.UTF8.GetBytes(filePath);
+        byte[] bytes = File.ReadAllBytes(filePath);
         ByteArrayContent content = new(bytes);
         content.Headers.ContentType = new(mediaTypeHeader);
         MultipartFormDataContent multipartFormData = new();
