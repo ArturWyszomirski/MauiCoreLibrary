@@ -15,8 +15,14 @@ public class HttpClientService : IHttpClientService
     }
     #endregion
 
+    #region Properties
+    public HttpResponseMessage ResponseMessage { get; private set; }
+
+    public Dictionary<string, object> ResponseAsDictionary { get; private set; }
+    #endregion
+
     #region Public methods
-    public async Task<Dictionary<string, object>> PostJsonAsync(string uri, string json)
+    public async Task<bool> PostJsonAsync(string uri, string json)
     {
         try
         {
@@ -25,15 +31,20 @@ public class HttpClientService : IHttpClientService
 
             _log?.AppendLine($"New send POST request to {uri} request with content:\n{json}");
             using HttpResponseMessage httpResponse = await client.PostAsync(uri, content);
+            ResponseMessage = httpResponse;
 
             _log?.AppendLine($"POST requested response: {httpResponse.StatusCode}");
-            return await GetResponseAsDictionary(httpResponse);
+            if (httpResponse.Content.Headers.ContentType.MediaType == "application/json")
+                ResponseAsDictionary = await GetResponseAsDictionary(httpResponse);
+
+            return true;
         }
         catch (Exception ex)
         {
             _log?.AppendLine(ex.ToString());
             await _alert?.DisplayAlertAsync("Error", $"Request not successful.\nError message: {ex.Message}", "Ok");
-            return null;
+
+            return false;
         }
     }
 
@@ -47,7 +58,7 @@ public class HttpClientService : IHttpClientService
     /// <param name="fileName"></param>
     /// <param name="apiKey"></param>
     /// <returns></returns>
-    public async Task<Dictionary<string, object>> PostFileAsync(string uri, string filePath, string mediaTypeHeader, string name = null, string fileName = null, string apiKey = null)
+    public async Task<bool> PostFileAsync(string uri, string filePath, string mediaTypeHeader, string name = null, string fileName = null, string apiKey = null)
     {
         try
         {
@@ -59,15 +70,20 @@ public class HttpClientService : IHttpClientService
 
             _log?.AppendLine($"New send POST request to {uri} request with content: {filePath}");
             using HttpResponseMessage httpResponse = await client.PostAsync(uri, multipartFormData);
+            ResponseMessage = httpResponse;
 
             _log?.AppendLine($"POST requested response: {httpResponse.StatusCode}");
-            return await GetResponseAsDictionary(httpResponse);
+            if (httpResponse.Content.Headers.ContentType.MediaType == "application/json")
+                ResponseAsDictionary =  await GetResponseAsDictionary(httpResponse);
+
+            return true;
         }
         catch (Exception ex)
         {
             _log?.AppendLine(ex.ToString());
             await _alert?.DisplayAlertAsync("Error", $"Request not successful.\nError message: {ex.Message}", "Ok");
-            return null;
+
+            return false;
         }
     }
 
