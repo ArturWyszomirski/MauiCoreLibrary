@@ -4,6 +4,7 @@
     {
         public ShellItem CurrentItem { get; }
         public ShellNavigationState CurrentState { get; }
+        public ShellNavigationState PreviousState { get; }
 
         /* URI-based navigation */
         Task GoToAsync(string route, bool animate = true, params object[] parameters);

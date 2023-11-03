@@ -9,7 +9,6 @@ public class NavigationService : INavigationService
     private readonly IServiceProvider _serviceProvider;
     private readonly IFileLogService _log;
     private object[] _parameters;
-    private ShellNavigationState _previousState;
     #endregion
 
     #region Constructors
@@ -28,10 +27,11 @@ public class NavigationService : INavigationService
     private static Page CurrentPage => Shell.Current.CurrentPage;
     public ShellItem CurrentItem => Shell.Current.CurrentItem; // Current item is the first item in shell hierarchy. Items nested inside the first item are available at CurrentItem.CurrentItem and so on...
     public ShellNavigationState CurrentState => Shell.Current.CurrentState;
+    public ShellNavigationState PreviousState { get; private set; }
     #endregion
 
     #region Public methods
-        #region URI-based navigation
+    #region URI-based navigation
     public async Task GoToAsync(string route, params object[] parameters)
     {
         _parameters = parameters;
@@ -47,13 +47,13 @@ public class NavigationService : INavigationService
     public async Task GoBackAsync(params object[] parameters)
     {
         _parameters = parameters;
-        await Shell.Current.GoToAsync(_previousState);
+        await Shell.Current.GoToAsync(PreviousState);
     }
 
     public async Task GoBackAsync(bool animate, params object[] parameters)
     {
         _parameters = parameters;
-        await Shell.Current.GoToAsync(_previousState, animate);
+        await Shell.Current.GoToAsync(PreviousState, animate);
     }
         #endregion
 
@@ -109,7 +109,7 @@ public class NavigationService : INavigationService
     private async Task CallOnNavigatingFromAsync()
     {
         _log?.AppendLine($"Navigating away from: {CurrentPage.Title}");
-        _previousState = CurrentState;
+        PreviousState = CurrentState;
         if (CurrentPage.BindingContext is ViewModelBase viewModel)
             await viewModel.OnNavigatingFromAsync(_parameters);
     }
