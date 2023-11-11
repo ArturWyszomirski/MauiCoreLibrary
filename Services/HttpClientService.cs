@@ -1,4 +1,6 @@
-﻿namespace MauiCoreLibrary.Services;
+﻿using System.Net.Http;
+
+namespace MauiCoreLibrary.Services;
 
 public class HttpClientService : IHttpClientService
 {
@@ -13,6 +15,10 @@ public class HttpClientService : IHttpClientService
         _alert = alert;
         _log = log;
     }
+    #endregion
+
+    #region EventHandlers
+    public EventHandler<SseUpdateReceivedEventArgs> SseUpdateReceived { get; set; }
     #endregion
 
     #region Properties
@@ -48,16 +54,6 @@ public class HttpClientService : IHttpClientService
         }
     }
 
-    /// <summary>
-    /// not tested
-    /// </summary>
-    /// <param name="uri"></param>
-    /// <param name="filePath"></param>
-    /// <param name="mediaTypeHeader"></param>
-    /// <param name="name"></param>
-    /// <param name="fileName"></param>
-    /// <param name="apiKey"></param>
-    /// <returns></returns>
     public async Task<bool> PostFileAsync(string uri, string filePath, string mediaTypeHeader, string name = null, string fileName = null, string apiKey = null)
     {
         try
@@ -87,16 +83,6 @@ public class HttpClientService : IHttpClientService
         }
     }
 
-    /// <summary>
-    /// not tested
-    /// </summary>
-    /// <param name="uri"></param>
-    /// <param name="filePath"></param>
-    /// <param name="mediaTypeHeader"></param>
-    /// <param name="name"></param>
-    /// <param name="fileName"></param>
-    /// <param name="apiKey"></param>
-    /// <returns></returns>
     public async Task<bool> PutFileAsync(string uri, string filePath, string mediaTypeHeader, string name = null, string fileName = null, string apiKey = null)
     {
         try
@@ -111,12 +97,48 @@ public class HttpClientService : IHttpClientService
             using HttpResponseMessage httpResponse = await client.PutAsync(uri, multipartFormData);
 
             _log?.AppendLine($"PUT requested response: {httpResponse.StatusCode}");
+
             return true;
         }
         catch (Exception ex)
         {
             _log?.AppendLine(ex.ToString());
             await _alert?.DisplayAlertAsync("Error", $"Request not successful.\nError message: {ex.Message}", "Ok");
+
+            return false;
+        }
+    }
+
+    public async Task<bool> SubscribeToSseAsync(string uri)
+    {
+        try
+        {
+            using HttpClient client = new();
+            client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("text/event-stream"));
+            _log?.AppendLine($"Subscribe to SSE request send to: {uri}");
+            var sseStream = await client.GetStreamAsync(uri);
+
+            await Task.Run(async () =>
+            {
+                using StreamReader reader = new(sseStream);
+                while (!reader.EndOfStream)
+                {
+                    var line = await reader.ReadLineAsync();
+                    if (string.IsNullOrWhiteSpace(line)) continue;
+                    _log?.AppendLine($"SSE update message: {line}");
+                    await MainThread.InvokeOnMainThreadAsync(() => {
+                        SseUpdateReceived?.Invoke(this, new SseUpdateReceivedEventArgs { Message = line });
+                    });
+                }
+            });
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _log?.AppendLine(ex.ToString());
+            await _alert?.DisplayAlertAsync("Error", $"Request not successful.\nError message: {ex.Message}", "Ok");
+
             return false;
         }
     }
@@ -167,4 +189,9 @@ public class HttpClientService : IHttpClientService
         return multipartFormData;
     }
     #endregion
+}
+
+public class SseUpdateReceivedEventArgs
+{
+    public string Message { get; set; }
 }

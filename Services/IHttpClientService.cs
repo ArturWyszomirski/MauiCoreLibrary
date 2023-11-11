@@ -2,6 +2,7 @@
 
 public interface IHttpClientService
 {
+    public EventHandler<SseUpdateReceivedEventArgs> SseUpdateReceived{ get; set; }
     HttpResponseMessage ResponseMessage { get; }
 
     Dictionary<string, object> ResponseAsDictionary { get; }
@@ -33,4 +34,6 @@ public interface IHttpClientService
     /// <param name="apiKey"></param>
     /// <returns></returns>
     Task<bool> PutFileAsync(string uri, string filePath, string mediaTypeHeader, string name = null, string fileName = null, string apiKey = null);
+
+    Task<bool> SubscribeToSseAsync(string uri);
 }
