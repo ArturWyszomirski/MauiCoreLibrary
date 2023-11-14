@@ -3,7 +3,7 @@
 public interface IHttpClientService
 {
     public EventHandler<SseUpdateReceivedEventArgs> SseUpdateReceived{ get; set; }
-    HttpResponseMessage ResponseMessage { get; }
+    HttpResponseMessage HttpResponseMessage { get; }
 
     Dictionary<string, object> ResponseAsDictionary { get; }
 

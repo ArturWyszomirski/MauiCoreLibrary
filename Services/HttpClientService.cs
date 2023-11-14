@@ -22,7 +22,7 @@ public class HttpClientService : IHttpClientService
     #endregion
 
     #region Properties
-    public HttpResponseMessage ResponseMessage { get; private set; }
+    public HttpResponseMessage HttpResponseMessage { get; private set; }
 
     public Dictionary<string, object> ResponseAsDictionary { get; private set; }
     #endregion
@@ -37,7 +37,7 @@ public class HttpClientService : IHttpClientService
 
             _log?.AppendLine($"New send POST request to {uri} request with content:\n{json}");
             using HttpResponseMessage httpResponse = await client.PostAsync(uri, content);
-            ResponseMessage = httpResponse;
+            HttpResponseMessage = httpResponse;
 
             _log?.AppendLine($"POST requested response: {httpResponse.StatusCode}");
             if (httpResponse.Content.Headers.ContentType.MediaType == "application/json")
@@ -56,21 +56,22 @@ public class HttpClientService : IHttpClientService
 
     public async Task<bool> PostFileAsync(string uri, string filePath, string mediaTypeHeader, string name = null, string fileName = null, string apiKey = null)
     {
+        HttpResponseMessage = default;
         try
         {
             using HttpClient client = new();
-            MultipartFormDataContent multipartFormData = CreateMultiPartFormDataContent(filePath, mediaTypeHeader, name, fileName);
 
             if (!string.IsNullOrEmpty(apiKey))
                 client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
             _log?.AppendLine($"New send POST request to {uri} request with content: {filePath}");
-            using HttpResponseMessage httpResponse = await client.PostAsync(uri, multipartFormData);
-            ResponseMessage = httpResponse;
-
+            using FileStream fileStream = File.OpenRead(filePath);
+            using StreamContent content = new(fileStream);
+            using HttpResponseMessage httpResponse = await client.PostAsync(uri, content);
             _log?.AppendLine($"POST requested response: {httpResponse.StatusCode}");
+
             if (httpResponse.Content.Headers.ContentType.MediaType == "application/json")
-                ResponseAsDictionary =  await GetResponseAsDictionary(httpResponse);
+                ResponseAsDictionary = await GetResponseAsDictionary(httpResponse);
 
             return true;
         }
@@ -85,17 +86,19 @@ public class HttpClientService : IHttpClientService
 
     public async Task<bool> PutFileAsync(string uri, string filePath, string mediaTypeHeader, string name = null, string fileName = null, string apiKey = null)
     {
+        HttpResponseMessage = default;
         try
         {
             using HttpClient client = new();
-            MultipartFormDataContent multipartFormData = CreateMultiPartFormDataContent(filePath, mediaTypeHeader, name, fileName);
 
             if (!string.IsNullOrEmpty(apiKey))
                 client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
             _log?.AppendLine($"New PUT request send to {uri} request with content: {filePath}");
-            using HttpResponseMessage httpResponse = await client.PutAsync(uri, multipartFormData);
-
+            using FileStream fileStream = File.OpenRead(filePath);
+            using StreamContent content = new(fileStream);
+            using HttpResponseMessage httpResponse = await client.PutAsync(uri, content);
+            HttpResponseMessage = httpResponse;
             _log?.AppendLine($"PUT requested response: {httpResponse.StatusCode}");
 
             return true;
