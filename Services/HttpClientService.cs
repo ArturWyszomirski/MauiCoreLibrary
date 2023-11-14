@@ -67,6 +67,7 @@ public class HttpClientService : IHttpClientService
             _log?.AppendLine($"New send POST request to {uri} request with content: {filePath}");
             using FileStream fileStream = File.OpenRead(filePath);
             using StreamContent content = new(fileStream);
+            content.Headers.ContentType = new(mediaTypeHeader);
             using HttpResponseMessage httpResponse = await client.PostAsync(uri, content);
             _log?.AppendLine($"POST requested response: {httpResponse.StatusCode}");
 
@@ -97,6 +98,7 @@ public class HttpClientService : IHttpClientService
             _log?.AppendLine($"New PUT request send to {uri} request with content: {filePath}");
             using FileStream fileStream = File.OpenRead(filePath);
             using StreamContent content = new(fileStream);
+            content.Headers.ContentType = new(mediaTypeHeader);
             using HttpResponseMessage httpResponse = await client.PutAsync(uri, content);
             HttpResponseMessage = httpResponse;
             _log?.AppendLine($"PUT requested response: {httpResponse.StatusCode}");
