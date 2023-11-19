@@ -1,28 +1,24 @@
 ﻿namespace MauiCoreLibrary.Models;
 
-//[KnownType(typeof(PersonalDataModel))]
-//[DataContract]
-//[ObservableObject]
-public partial class PersonalDataModel : ObservableRecipient, IPersonalDataModel
+public partial class PersonalDataModel : ObservableRecipient, IPersonalDataModel // ObservableValidator !!
 {
-    //[DataMember]
+    [PrimaryKey, AutoIncrement] 
+    public int Id { get; set; }
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(FullName))]
     [NotifyPropertyChangedRecipients]
     private string _firstName;
 
-    //[DataMember]
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(FullName))]
     [NotifyPropertyChangedRecipients]
     private string _lastName;
 
-    //[DataMember]
     [ObservableProperty]
     [NotifyPropertyChangedRecipients]
     private string _emailAddress;
 
-    //[DataMember]
     [ObservableProperty]
     [NotifyPropertyChangedRecipients]
     private string _phoneNumber;
