@@ -5,12 +5,14 @@
         public ShellItem CurrentItem { get; }
         public ShellNavigationState CurrentState { get; }
         public ShellNavigationState PreviousState { get; }
+        IReadOnlyList<Page> NavigationStack { get; }
 
         /* URI-based navigation */
         Task GoToAsync(string route, bool animate = true, params object[] parameters);
         Task GoToAsync(string route, params object[] parameters);
         Task GoBackAsync(params object[] parameters);
         Task GoBackAsync(bool animate, params object[] parameters);
+        void RemovePage(Page page);
 
         /* Modeless navigation */
         Task PopAsync(bool animated = true, params object[] parameters);

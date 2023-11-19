@@ -15,7 +15,7 @@ public class NavigationService : INavigationService
     public NavigationService(IServiceProvider serviceProvider, IFileLogService log)
     {
         _serviceProvider = serviceProvider;
-        _log = log;
+        _log = log;/* Navigation.RemovePage(Navigation.NavigationStack[0])*/
 
         Shell.Current.Navigated += async (s, e) => await CallOnNavigatedToAsync();
         Shell.Current.Navigating += async (s, e) => await CallOnNavigatingFromAsync(); // navigating isn't fired when navigating using tabbar - MAUI framework bug
@@ -28,10 +28,11 @@ public class NavigationService : INavigationService
     public ShellItem CurrentItem => Shell.Current.CurrentItem; // Current item is the first item in shell hierarchy. Items nested inside the first item are available at CurrentItem.CurrentItem and so on...
     public ShellNavigationState CurrentState => Shell.Current.CurrentState;
     public ShellNavigationState PreviousState { get; private set; }
+    public IReadOnlyList<Page> NavigationStack => Navigation.NavigationStack;
     #endregion
 
     #region Public methods
-    #region URI-based navigation
+        #region URI-based navigation
     public async Task GoToAsync(string route, params object[] parameters)
     {
         _parameters = parameters;
@@ -95,6 +96,8 @@ public class NavigationService : INavigationService
         _parameters = parameters;
         await Navigation.PopAsync(animated);
     }
+
+    public void RemovePage(Page page) => Navigation.RemovePage(page);
         #endregion
     #endregion
 
