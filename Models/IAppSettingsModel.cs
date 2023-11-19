@@ -2,6 +2,7 @@
 
 public interface IAppSettingsModel
 {
-    string AppDataDirectory { get; }
     string AppName { get; }
+    string AppDataDirectory { get; }
+    string AppDocumentsDirectory { get; }
 }
