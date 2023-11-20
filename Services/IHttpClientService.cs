@@ -35,5 +35,5 @@ public interface IHttpClientService
     /// <returns></returns>
     Task<bool> PutFileAsync(string uri, string filePath, string mediaTypeHeader, string name = null, string fileName = null, string apiKey = null);
 
-    Task<bool> SubscribeToSseAsync(string uri);
+    Task<bool> SubscribeToSseAsync(string uri, CancellationToken stopToken, CancellationToken cancelToken);
 }

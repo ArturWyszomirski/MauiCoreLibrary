@@ -114,7 +114,7 @@ public class HttpClientService : IHttpClientService
         }
     }
 
-    public async Task<bool> SubscribeToSseAsync(string uri)
+    public async Task<bool> SubscribeToSseAsync(string uri, CancellationToken stopToken, CancellationToken cancelToken)
     {
         try
         {
@@ -128,21 +128,34 @@ public class HttpClientService : IHttpClientService
                 using StreamReader reader = new(sseStream);
                 while (!reader.EndOfStream)
                 {
+                    cancelToken.ThrowIfCancellationRequested();
+
+                    if (stopToken.IsCancellationRequested)
+                    {
+                        _log?.AppendLine($"{uri} SSE has been stopped by client.");
+                        break;
+                    }
+
                     var line = await reader.ReadLineAsync();
-                    if (string.IsNullOrWhiteSpace(line)) continue;
+
+                    if (string.IsNullOrWhiteSpace(line)) 
+                        continue;
+
                     _log?.AppendLine($"SSE update message: {line}");
                     await MainThread.InvokeOnMainThreadAsync(() => {
                         SseUpdateReceived?.Invoke(this, new SseUpdateReceivedEventArgs { Message = line });
                     });
                 }
-            });
+            }, cancelToken);
+
+            _log?.AppendLine($"End of {uri} SSE stream.");
 
             return true;
         }
         catch (Exception ex)
         {
             _log?.AppendLine(ex.ToString());
-            await _alert?.DisplayAlertAsync("Error", $"Request not successful.\nError message: {ex.Message}", "Ok");
+            await _alert?.DisplayAlertAsync("Error", $"SSE request not successful.\nError message: {ex.Message}", "Ok");
 
             return false;
         }
