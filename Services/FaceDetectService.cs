@@ -17,7 +17,7 @@ public class FaceDetectService : IFaceDetectService
     #region Constructors
     public FaceDetectService()
     {
-        var files = new[] { "RFB-320.bin", "RFB-320.param" };
+        var files = new[] { "RFB_320.bin", "RFB_320.param" };
 
         foreach (var file in files)
         {
