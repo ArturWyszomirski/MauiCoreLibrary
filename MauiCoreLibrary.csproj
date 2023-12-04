@@ -17,8 +17,8 @@
 	  <None Remove=".gitignore" />
 	  <None Remove="LICENSE.txt" />
 	  <None Remove="README.md" />
-	  <None Remove="Resources\Raw\RFB-320.bin" />
-	  <None Remove="Resources\Raw\RFB-320.param" />
+	  <None Remove="Resources\raw\RFB_320.bin" />
+	  <None Remove="Resources\raw\RFB_320.param" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -37,10 +37,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiAsset Include="Resources\Raw\RFB-320.bin">
+	  <MauiAsset Include="Resources\Raw\RFB_320.bin">
 	    <LogicalName>%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
 	  </MauiAsset>
-	  <MauiAsset Include="Resources\Raw\RFB-320.param">
+	  <MauiAsset Include="Resources\Raw\RFB_320.param">
 	    <LogicalName>%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
 	  </MauiAsset>
 	</ItemGroup>
