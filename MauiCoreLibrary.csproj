@@ -14,6 +14,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Extensions\TranslateExtension.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <None Remove=".gitattributes" />
 	  <None Remove=".gitignore" />
 	  <None Remove="LICENSE.txt" />
@@ -44,6 +48,10 @@
 	  <MauiAsset Include="Resources\Raw\RFB_320.param">
 	    <LogicalName>%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
 	  </MauiAsset>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="Extensions\TranslateExtension.cs" />
 	</ItemGroup>
 
 </Project>
