@@ -23,12 +23,14 @@ public class NavigationService : INavigationService
     #endregion
 
     #region Properties
-    private static INavigation Navigation => Application.Current.MainPage.Navigation;
-    private static Page CurrentPage => Shell.Current.CurrentPage;
+    private INavigation Navigation => Application.Current.MainPage.Navigation;
+    public Page CurrentPage => Shell.Current.CurrentPage;
+    public Page PreviousPage { get; private set; }
     public ShellItem CurrentItem => Shell.Current.CurrentItem; // Current item is the first item in shell hierarchy. Items nested inside the first item are available at CurrentItem.CurrentItem and so on...
     public ShellNavigationState CurrentState => Shell.Current.CurrentState;
     public ShellNavigationState PreviousState { get; private set; }
     public IReadOnlyList<Page> NavigationStack => Navigation.NavigationStack;
+    public IReadOnlyList<Page> ModalStack => Navigation.ModalStack;
     #endregion
 
     #region Public methods
@@ -97,6 +99,18 @@ public class NavigationService : INavigationService
         await Navigation.PopAsync(animated);
     }
 
+    public async Task PopToRoot(params object[] parameters)
+    {
+        _parameters = parameters;
+        await Navigation.PopToRootAsync();
+    }
+
+    public async Task PopToRoot(bool animated = true, params object[] parameters)
+    {
+        _parameters = parameters;
+        await Navigation.PopToRootAsync(animated);
+    }
+
     public void RemovePage(Page page) => Navigation.RemovePage(page);
         #endregion
     #endregion
@@ -105,6 +119,7 @@ public class NavigationService : INavigationService
     private async Task CallOnNavigatedToAsync()
     {
         _log?.AppendLine($"Navigating to: {CurrentPage.Title}");
+
         if (CurrentPage.BindingContext is ViewModelBase viewModel)
             await viewModel.OnNavigatedToAsync(_parameters);
     }
@@ -112,9 +127,12 @@ public class NavigationService : INavigationService
     private async Task CallOnNavigatingFromAsync()
     {
         _log?.AppendLine($"Navigating away from: {CurrentPage.Title}");
-        PreviousState = CurrentState;
+
         if (CurrentPage.BindingContext is ViewModelBase viewModel)
             await viewModel.OnNavigatingFromAsync(_parameters);
+
+        PreviousState = CurrentState;
+        PreviousPage = CurrentPage;
     }
     #endregion
 }
