@@ -1,4 +1,6 @@
-﻿namespace MauiCoreLibrary.Services;
+﻿using System.Runtime.InteropServices;
+
+namespace MauiCoreLibrary.Services;
 
 /// <summary>
 /// To use this service invoke CreateFile() before appending text.
@@ -18,10 +20,11 @@ public class FileLogService(IAlertService alert = null, IAppSettingsModel appSet
     protected string FileType { get; set; } = "txt";
 
     /// <summary>
-    /// If <paramref name="filePath"/> or <paramref name="fileName"/> not provided creates a file with default values default values (filePath: MyDocuments/AppName).
+    /// If <paramref name="filePath"/> or <paramref name="fileName"/> not provided creates a file with default values.
     /// </summary>
-    /// <param name="filePath"></param>
+    /// <param name="filePath">Default value is Path.Combine(_appSettings?.AppDataDirectory, _appSettings?.AppName, DirectoryName) in Windows 
     /// or Path.Combine(_appSettings?.AppDataDirectory, DirectoryName) in Android.</param>
+    /// <param name="fileName">Default values is {TimeStamp.TimeStampDashed}_{FileSuffix}.{FileType}.</param>
     /// <exception cref="Exception"></exception>
     public void CreateFile(string filePath = null, string fileName = null)
     {
@@ -35,8 +38,10 @@ public class FileLogService(IAlertService alert = null, IAppSettingsModel appSet
                     FilePath = Path.Combine(_appSettings?.AppDataDirectory, DirectoryName);
 #endif
                 }
-                else throw new ArgumentNullException(_appSettings.AppDataDirectory);
-            else throw new ArgumentNullException(_appSettings.AppName);
+                else throw new ArgumentNullException(_appSettings.AppDataDirectory,
+                    "Path of log file has to be passed in parameters or IAppSettingsModel needs to be resolved at runtime.");
+            else throw new ArgumentNullException(_appSettings.AppName,
+                "Path of log file has to be passed in parameters or IAppSettingsModel needs to be resolved at runtime.");
         else
             FilePath = filePath;
 
