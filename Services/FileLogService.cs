@@ -3,19 +3,13 @@
 /// <summary>
 /// To use this service invoke CreateFile() before appending text.
 /// </summary>
-public class FileLogService : IFileLogService
+public class FileLogService(IAlertService alert = null, IAppSettingsModel appSettings = null) : IFileLogService
 {
-    private readonly IAlertService _alert;
-    private readonly IAppSettingsModel _appSettings;
+    private readonly IAlertService _alert = alert;
+    private readonly IAppSettingsModel _appSettings = appSettings;
 
     readonly object _readLock = new();
     readonly object _appendLock = new();
-
-    public FileLogService(IAlertService alert, IAppSettingsModel appSettings)
-    {
-        _alert = alert;
-        _appSettings = appSettings;
-    }
 
     public string FilePath { get; protected set; }
     public string FileName { get; protected set; }
@@ -27,7 +21,7 @@ public class FileLogService : IFileLogService
     /// If <paramref name="filePath"/> or <paramref name="fileName"/> not provided creates a file with default values default values (filePath: MyDocuments/AppName).
     /// </summary>
     /// <param name="filePath"></param>
-    /// <param name="fileName"></param>
+    /// or Path.Combine(_appSettings?.AppDataDirectory, DirectoryName) in Android.</param>
     /// <exception cref="Exception"></exception>
     public void CreateFile(string filePath = null, string fileName = null)
     {
