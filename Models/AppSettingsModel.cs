@@ -1,4 +1,6 @@
-﻿namespace MauiCoreLibrary.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace MauiCoreLibrary.Models;
 
 public class AppSettingsModel : ModelBase, IAppSettingsModel
 {
@@ -16,4 +18,10 @@ public class AppSettingsModel : ModelBase, IAppSettingsModel
     public string AppName { get; } = Assembly.GetCallingAssembly().GetName().Name;
     public string AppDataDirectory { get; }
     public string AppDocumentsDirectory { get; }
+
+    public JsonSerializerOptions JsonSerializerOptions { get; } = new() 
+    { 
+        WriteIndented = true,
+        NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals
+    };
 }
