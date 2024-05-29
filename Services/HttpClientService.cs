@@ -5,6 +5,8 @@ public class HttpClientService : IHttpClientService
     #region Fields
     private readonly IAlertService _alert;
     private readonly IFileLogService _log;
+
+    private readonly HttpClient _client;
     #endregion
 
     #region Constructor
@@ -12,6 +14,13 @@ public class HttpClientService : IHttpClientService
     {
         _alert = alert;
         _log = log;
+
+#if DEBUG
+        HttpsClientHandlerService handler = new();
+        _client = new(handler.GetPlatformMessageHandler());
+#else
+        _client = new();
+#endif
     }
     #endregion
 
@@ -28,10 +37,8 @@ public class HttpClientService : IHttpClientService
     {
         try
         {
-            using HttpClient client = new();
-
             _log?.AppendLine($"New send GET request to {uri}.");
-            ResponseMessage = await client.GetAsync(uri);
+            ResponseMessage = await _client.GetAsync(uri);
             await LogResponse();
 
             return true;
@@ -49,11 +56,10 @@ public class HttpClientService : IHttpClientService
     {
         try
         {
-            using HttpClient client = new();
             StringContent content = new(json, Encoding.UTF8, "application/json");
 
             _log?.AppendLine($"New send POST request to {uri} with content:\n{json}");
-            ResponseMessage = await client.PostAsync(uri, content);
+            ResponseMessage = await _client.PostAsync(uri, content);
             await LogResponse();
 
             return true;
@@ -71,16 +77,14 @@ public class HttpClientService : IHttpClientService
     {
         try
         {
-            using HttpClient client = new();
-
             if (!string.IsNullOrEmpty(apiKey))
-                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+                _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
             _log?.AppendLine($"New send POST request to {uri} with content: {filePath}");
             using FileStream fileStream = File.OpenRead(filePath);
             using StreamContent content = new(fileStream);
             content.Headers.ContentType = new(mediaTypeHeader);
-            ResponseMessage = await client.PostAsync(uri, content);
+            ResponseMessage = await _client.PostAsync(uri, content);
             await LogResponse();
 
             return true;
@@ -98,11 +102,10 @@ public class HttpClientService : IHttpClientService
     {
         try
         {
-            using HttpClient client = new();
             StringContent content = new(json, Encoding.UTF8, "application/json");
 
             _log?.AppendLine($"New send PUT request to {uri} with content:\n{json}");
-            ResponseMessage = await client.PutAsync(uri, content);
+            ResponseMessage = await _client.PutAsync(uri, content);
             await LogResponse();
 
             return true;
@@ -120,16 +123,14 @@ public class HttpClientService : IHttpClientService
     {
         try
         {
-            using HttpClient client = new();
-
             if (!string.IsNullOrEmpty(apiKey))
-                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+                _client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
             _log?.AppendLine($"New PUT request send to {uri} with content: {filePath}");
             using FileStream fileStream = File.OpenRead(filePath);
             using StreamContent content = new(fileStream);
             content.Headers.ContentType = new(mediaTypeHeader);
-            ResponseMessage = await client.PutAsync(uri, content);
+            ResponseMessage = await _client.PutAsync(uri, content);
             await LogResponse();
 
 
@@ -148,10 +149,9 @@ public class HttpClientService : IHttpClientService
     {
         try
         {
-            using HttpClient client = new();
-            client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("text/event-stream"));
+            _client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("text/event-stream"));
             _log?.AppendLine($"Subscribe to SSE request send to: {uri}");
-            var sseStream = await client.GetStreamAsync(uri);
+            var sseStream = await _client.GetStreamAsync(uri);
 
             await Task.Run(async () =>
             {
@@ -217,7 +217,7 @@ public class HttpClientService : IHttpClientService
 
         return postResponse;
     }
-    #endregion
+#endregion
 
     #region Private methods
     private async Task LogResponse()
@@ -249,4 +249,36 @@ public class HttpClientService : IHttpClientService
 public class SseUpdateReceivedEventArgs
 {
     public string Message { get; set; }
+}
+
+public class HttpsClientHandlerService
+{
+    public HttpMessageHandler GetPlatformMessageHandler()
+    {
+#if ANDROID
+        var handler = new Xamarin.Android.Net.AndroidMessageHandler();
+        handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
+        {
+            if (cert != null && cert.Issuer.Equals("CN=localhost"))
+                return true;
+            return errors == System.Net.Security.SslPolicyErrors.None;
+        };
+        return handler;
+#elif IOS
+        var handler = new NSUrlSessionHandler
+        {
+            TrustOverrideForUrl = IsHttpsLocalhost
+        };
+        return handler;
+#else
+        throw new PlatformNotSupportedException("Only Android and iOS supported.");
+#endif
+    }
+
+#if IOS
+    public bool IsHttpsLocalhost(NSUrlSessionHandler sender, string url, Security.SecTrust trust)
+    {
+        return url.StartsWith("https://localhost");
+    }
+#endif
 }
