@@ -1,4 +1,6 @@
-﻿namespace MauiCoreLibrary.Services;
+﻿using System.Net.Http.Json;
+
+namespace MauiCoreLibrary.Services;
 
 public class HttpClientService : IHttpClientService
 {
@@ -15,11 +17,13 @@ public class HttpClientService : IHttpClientService
         _alert = alert;
         _log = log;
 
+        _client = new();
+
 #if DEBUG
+#if (ANDROID || IOS)
         HttpsClientHandlerService handler = new();
         _client = new(handler.GetPlatformMessageHandler());
-#else
-        _client = new();
+#endif
 #endif
     }
     #endregion
@@ -39,6 +43,7 @@ public class HttpClientService : IHttpClientService
         {
             _log?.AppendLine($"New send GET request to {uri}.");
             ResponseMessage = await _client.GetAsync(uri);
+            ResponseMessage.EnsureSuccessStatusCode();
             await LogResponse();
 
             return true;
@@ -52,14 +57,13 @@ public class HttpClientService : IHttpClientService
         }
     }
 
-    public async Task<bool> PostJsonAsync(Uri uri, string json)
+    public async Task<bool> PostJsonAsync(Uri uri, object value)
     {
         try
         {
-            StringContent content = new(json, Encoding.UTF8, "application/json");
-
-            _log?.AppendLine($"New send POST request to {uri} with content:\n{json}");
-            ResponseMessage = await _client.PostAsync(uri, content);
+            _log?.AppendLine($"New send POST request to {uri} with content:\n{value}");
+            ResponseMessage = await _client.PostAsJsonAsync(uri, value);
+            ResponseMessage.EnsureSuccessStatusCode();
             await LogResponse();
 
             return true;
@@ -85,6 +89,7 @@ public class HttpClientService : IHttpClientService
             using StreamContent content = new(fileStream);
             content.Headers.ContentType = new(mediaTypeHeader);
             ResponseMessage = await _client.PostAsync(uri, content);
+            ResponseMessage.EnsureSuccessStatusCode();
             await LogResponse();
 
             return true;
@@ -106,6 +111,7 @@ public class HttpClientService : IHttpClientService
 
             _log?.AppendLine($"New send PUT request to {uri} with content:\n{json}");
             ResponseMessage = await _client.PutAsync(uri, content);
+            ResponseMessage.EnsureSuccessStatusCode();
             await LogResponse();
 
             return true;
@@ -131,6 +137,7 @@ public class HttpClientService : IHttpClientService
             using StreamContent content = new(fileStream);
             content.Headers.ContentType = new(mediaTypeHeader);
             ResponseMessage = await _client.PutAsync(uri, content);
+            ResponseMessage.EnsureSuccessStatusCode();
             await LogResponse();
 
 

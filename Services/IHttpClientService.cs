@@ -8,7 +8,7 @@ public interface IHttpClientService
 
     Task<bool> GetAsync(Uri uri);
 
-    Task<bool> PostJsonAsync(Uri uri, string json);
+    Task<bool> PostJsonAsync(Uri uri, object json);
 
     /// <summary>
     /// Parameter <paramref name="name"/> is a field name for API (not file name).
